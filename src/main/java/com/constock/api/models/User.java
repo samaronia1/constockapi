@@ -1,17 +1,20 @@
 package com.constock.api.models;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.Date;
 
 @Entity
 @Table(name = "TB_USER")
-public class User {
+public class User implements UserDetails {
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     private String name;
+    @Column(unique = true)
     private String email;
     private String password;
 
@@ -42,12 +45,42 @@ public class User {
         this.email = email;
     }
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
+    }
+
     public String getPassword() {
         return password;
     }
 
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
     public void setPassword(String password) {
-        this.password = BCrypt.withDefaults().hashToString(12, password.toCharArray());
+        this.password = password;
     }
 
     public Date getUpdatedAt() {
