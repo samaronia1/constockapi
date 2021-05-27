@@ -8,6 +8,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,18 +19,17 @@ public class UserResources {
 
     @PostMapping(value = "/user/signup")
     @ResponseBody
-    public String CreateUser(@RequestBody User user, HttpServletResponse response) {
+    public void CreateUser(@RequestBody User user, HttpServletResponse response) throws IOException {
         user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
         userRepository.save(user);
         TokenAuthenticationService.addAuthentication(response, user.getEmail());
-        return "User created successfully";
     }
 
     @PutMapping(value = "/user")
     @ResponseBody
-    public String UpdateUser(@RequestBody User user,
+    public void UpdateUser(@RequestBody User user,
                                       @RequestHeader(value = "Authorization") String token,
-                                      HttpServletResponse response) {
+                                      HttpServletResponse response) throws IOException {
 
         String email = TokenAuthenticationService.getEmailByToken(token);
         User userInfo = userRepository.findByEmail(email);
@@ -39,7 +39,6 @@ public class UserResources {
                 new BCryptPasswordEncoder().encode(user.getPassword()) : userInfo.getPassword());
         userRepository.save(userInfo);
         TokenAuthenticationService.addAuthentication(response, userInfo.getEmail());
-        return "User updated successfully";
     }
 
     @DeleteMapping(value = "/user")

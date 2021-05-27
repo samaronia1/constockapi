@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 
@@ -26,10 +27,12 @@ public class TokenAuthenticationService {
                 .compact();
     }
 
-    public static void addAuthentication(HttpServletResponse response, String email) {
+    public static void addAuthentication(HttpServletResponse response, String email) throws IOException {
         String jwt = createToken(email);
 
-        response.addHeader(HEADER_STRING, TOKEN_PREFIX + " " + jwt);
+        String bareToken = TOKEN_PREFIX + " " + jwt;
+        response.getWriter().write(bareToken);
+        response.addHeader(HEADER_STRING, bareToken);
     }
 
     public static String getEmailByToken(String token) {
