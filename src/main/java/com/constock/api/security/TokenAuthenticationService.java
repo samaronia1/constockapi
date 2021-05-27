@@ -18,25 +18,33 @@ public class TokenAuthenticationService {
     static final String TOKEN_PREFIX = "Bearer";
     static final String HEADER_STRING = "Authorization";
 
-    static void addAuthentication(HttpServletResponse response, String email) {
-        String jwt = Jwts.builder()
+    public static String createToken(String email) {
+        return Jwts.builder()
                 .setSubject(email)
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(SignatureAlgorithm.HS512, SECRET)
                 .compact();
+    }
+
+    public static void addAuthentication(HttpServletResponse response, String email) {
+        String jwt = createToken(email);
 
         response.addHeader(HEADER_STRING, TOKEN_PREFIX + " " + jwt);
+    }
+
+    public static String getEmailByToken(String token) {
+        return Jwts.parser()
+                .setSigningKey(SECRET)
+                .parseClaimsJws(token.replace(TOKEN_PREFIX, ""))
+                .getBody()
+                .getSubject();
     }
 
     static Authentication getAuthentication(HttpServletRequest request) {
         String token = request.getHeader(HEADER_STRING);
 
         if (token != null) {
-            String user = Jwts.parser()
-                    .setSigningKey(SECRET)
-                    .parseClaimsJws(token.replace(TOKEN_PREFIX, ""))
-                    .getBody()
-                    .getSubject();
+            String user = getEmailByToken(token);
 
             if (user != null) {
                 return new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
